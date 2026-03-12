@@ -175,7 +175,7 @@ The server starts at → `http://localhost:8080`
 
 ---
 
-### 🧪 Quick Test
+###  Quick Test
 
 ```bash
 curl -X POST http://localhost:8080/shortener \
@@ -231,6 +231,4 @@ This architecture is designed to scale horizontally:
 
 ##  License
 
-MIT © `<Bathula Ganesh>`
-
-• User authentication
+Apache License 2.0 © Bathula Ganesh
