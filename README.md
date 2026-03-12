@@ -1,215 +1,236 @@
-This project implements a URL shortening service similar to Bitly.
-It converts long URLs into short unique links and redirects users efficiently.
+#  URL Shortener
 
-The system demonstrates backend engineering concepts including:
-<br>
-• REST API development
-• Redis caching <br>
-• Database persistence <br>
-• Base62 encoding for short codes <br>
-• Scalable service architecture
-<br>
-This section describes how requests flow through the system.
+> A high-performance URL shortening service built with Java, Spring Boot, Redis, and PostgreSQL — inspired by Bitly.
 
-Where to place architecture diagram:
+---
 
-Save the diagram in the repository:
+##  Overview
+
+This project implements a production-grade **URL shortening service** that converts long URLs into compact, shareable links and redirects users with minimal latency.
+
+It demonstrates core backend engineering principles across the full stack:
+
+| Concept | Implementation |
+|---|---|
+| REST API Design | Spring Boot Controllers |
+| Caching Strategy | Redis (in-memory) |
+| Data Persistence | PostgreSQL |
+| ID Generation | Base62 Encoding |
+| Containerization | Docker Compose |
+| Scalable Architecture | Stateless services + DB replication |
+
+---
+
+##  Architecture
 
 <img width="2156" height="725" alt="null" src="https://github.com/user-attachments/assets/7c6df63f-c572-4962-9499-e661c158394a" />
 
 
+### Request Flow
 
-Then reference it here:
+1. **Client** sends a `POST /shortener` request with a long URL
+2. **Spring Boot API** receives and validates the request
+3. **URLConverterService** generates a unique short code via Base62 encoding
+4. **URL mapping** is persisted in PostgreSQL
+5. **Redis** caches the mapping for fast future lookups
+6. **Redirect requests** are served directly from Redis when cached, falling back to PostgreSQL on cache miss
 
-Request Flow
+> 📷 Place your architecture diagram at `Architecture.png` in the project root and reference it here.
 
-1. Client sends a request to shorten a URL
-2. Spring Boot API receives the request
-3. Service generates a short code using Base62 encoding
-4. URL mapping stored in PostgreSQL
-5. Redis cache stores frequently accessed URLs
-6. Redirect requests served directly from Redis for faster performance
+---
 
-Backend 
-Java
+##  Tech Stack
 
-Framework 
-Spring Boot
+| Layer | Technology |
+|---|---|
+| **Language** | Java |
+| **Framework** | Spring Boot |
+| **Cache** | Redis |
+| **Database** | PostgreSQL |
+| **Build Tool** | Maven |
+| **Containers** | Docker + Docker Compose |
 
-Cache Layer 
-Redis
+---
 
-Database 
-PostgreSQL
-
-Build Tool 
-Maven
-
-Containerization 
-Docker
+##  Project Structure
 
 ```
-url-shortener
-
-src/main/java/com/urlshortener
-
-controller
- └── URLController.java
-
-service
- └── URLConverterService.java
-
-repository
- └── URLRepository.java
-
-common
- ├── IDConverter.java
- └── URLValidator.java
-
-URLShortenerApplication.java
+url-shortener/
+└── src/main/java/com/urlshortener/
+    ├── controller/
+    │   └── URLController.java          # REST API endpoints
+    ├── service/
+    │   └── URLConverterService.java    # Core business logic
+    ├── repository/
+    │   └── URLRepository.java          # Redis + PostgreSQL I/O
+    ├── common/
+    │   ├── IDConverter.java            # Base62 encoding (Singleton)
+    │   └── URLValidator.java           # URL format validation
+    └── URLShortenerApplication.java    # Application entry point
 ```
 
-IDConverter.java 
-A Singleton class responsible for:
+### Component Descriptions
 
-1. Generating numeric IDs
-2. Converting numeric IDs into Base62 short codes
-3. Decoding short codes back to original IDs
+**`IDConverter.java`** — Singleton responsible for:
+- Generating numeric IDs
+- Converting numeric IDs into Base62 short codes (e.g. `aB12X`)
+- Decoding short codes back to their original numeric IDs
 
-URLValidator.java 
-A utility class responsible for validating URL format before processing.
+**`URLValidator.java`** — Utility class that validates URL format and structure before processing.
 
-URLController.java 
-A Spring Boot controller responsible for:
+**`URLController.java`** — Spring Boot REST controller that:
+- Accepts URL shortening requests (`POST /shortener`)
+- Handles redirect logic for short codes (`GET /{shortCode}`)
 
-1. Accepting URL shortening requests
-2. Redirecting shortened URLs to the original URL
+**`URLRepository.java`** — Data access layer handling read/write operations to both Redis and PostgreSQL.
 
-URLRepository.java 
-Handles read and write operations to Redis and PostgreSQL.
+**`URLConverterService.java`** — Core service implementing:
+- URL shortening pipeline
+- URL retrieval and redirect resolution
 
-URLConverterService.java 
-Implements the core business logic including:
+**`URLShortenerApplication.java`** — Spring Boot application entry point.
 
-1. URL shortening process
-2. URL retrieval and redirect logic
+---
 
-URLShortenerApplication.java 
-Entry point for the Spring Boot application.
+##  API Reference
 
-Create Short URL
+### Shorten a URL
 
+```http
 POST /shortener
-
-Request Body:
-
+Content-Type: application/json
 ```
+
+**Request Body:**
+```json
 {
-"url": "https://example.com/very-long-url"
+  "url": "https://example.com/very-long-url"
 }
 ```
 
-Response:
-
-```
+**Response:**
+```json
 {
-"shortUrl": "http://localhost:8080/aB12X"
+  "shortUrl": "http://localhost:8080/aB12X"
 }
 ```
 
-Redirect URL
+---
 
+### Redirect via Short Code
+
+```http
 GET /{shortCode}
-
-Example:
-
-```
-http://localhost:8080/aB12X
 ```
 
-Response:
-
-HTTP 302 Redirect to original URL.
-
-This project can be executed using Docker containers.
-
-Step 1 — Clone repository
-
+**Example:**
 ```
+GET http://localhost:8080/aB12X
+```
+
+**Response:** `HTTP 302 Redirect` → original URL
+
+---
+
+##  Getting Started
+
+### Option A — Docker (Recommended)
+
+**Step 1 — Clone the repository**
+```bash
 git clone https://github.com/<your-username>/url-shortener
 cd url-shortener
 ```
 
-Step 2 — Start services
-
-```
+**Step 2 — Start all services**
+```bash
 docker-compose up --build
 ```
 
-This command will start:
+This spins up:
+-  Spring Boot Application
+-  Redis Server
+-  PostgreSQL Database
 
-• Spring Boot Application
-• Redis Server
-• PostgreSQL Database
+---
 
-1. Start Redis Server
+### Option B — Run Locally
 
-```
+**1. Start Redis**
+```bash
 redis-server
 ```
 
-2. Build the project
-
-```
+**2. Build the project**
+```bash
 mvn clean install
 ```
 
-3. Run the application
-
-```
+**3. Run the application**
+```bash
 mvn spring-boot:run
 ```
 
-The server will run at:
+The server starts at → `http://localhost:8080`
 
-```
-http://localhost:8080
-```
+---
 
-Send POST request:
+### 🧪 Quick Test
 
-```
-POST http://localhost:8080/shortener
-```
-
-Body:
-
-```
-{
-"url":"https://google.com"
-}
+```bash
+curl -X POST http://localhost:8080/shortener \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://google.com"}'
 ```
 
-Redis is used to cache frequently accessed URLs.
+---
 
-Flow:
+##  Caching Strategy
 
-1. Check Redis cache for short code
-2. If found → redirect immediately
-3. If not found → fetch from PostgreSQL
-4. Store result in Redis for future requests
+Redis is used to cache frequently accessed URL mappings for near-instant redirects.
 
-This system can scale by:
+**Cache Resolution Flow:**
 
-• Adding load balancers
-• Running multiple Spring Boot instances
-• Redis clustering
-• PostgreSQL replication
+```
+Incoming short code
+       │
+       ▼
+  Redis cache hit? ──Yes──▶ Redirect immediately
+       │
+      No
+       │
+       ▼
+ Query PostgreSQL
+       │
+       ▼
+ Store in Redis ──────────▶ Redirect to original URL
+```
 
-Possible enhancements include:
+---
 
-• Custom alias URLs
-• Link expiration
-• Analytics dashboard for clicks
-• API rate limiting
+##  Scalability
+
+This architecture is designed to scale horizontally:
+
+- **Load Balancers** — Distribute traffic across multiple Spring Boot instances
+- **Stateless API Layer** — Any instance can handle any request
+- **Redis Clustering** — Distributed cache across multiple nodes
+- **PostgreSQL Replication** — Read replicas reduce DB bottlenecks
+
+---
+
+##  Planned Enhancements
+
+- [ ] Custom alias URLs (e.g. `/my-link`)
+- [ ] Link expiration with TTL support
+- [ ] Analytics dashboard (click counts, geolocation)
+- [ ] API rate limiting per client
+- [ ] User authentication and link ownership
+
+---
+
+##  License
+
+MIT © `<Bathula Ganesh>`
+
 • User authentication
