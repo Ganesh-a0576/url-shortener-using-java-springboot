@@ -35,8 +35,6 @@ It demonstrates core backend engineering principles across the full stack:
 5. **Redis** caches the mapping for fast future lookups
 6. **Redirect requests** are served directly from Redis when cached, falling back to PostgreSQL on cache miss
 
-> 📷 Place your architecture diagram at `Architecture.png` in the project root and reference it here.
-
 ---
 
 ##  Tech Stack
