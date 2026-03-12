@@ -2,23 +2,22 @@ This project implements a URL shortening service similar to Bitly.
 It converts long URLs into short unique links and redirects users efficiently.
 
 The system demonstrates backend engineering concepts including:
-
+<br>
 • REST API development
-• Redis caching
-• Database persistence
-• Base62 encoding for short codes
+• Redis caching <br>
+• Database persistence <br>
+• Base62 encoding for short codes <br>
 • Scalable service architecture
-
+<br>
 This section describes how requests flow through the system.
 
 Where to place architecture diagram:
 
 Save the diagram in the repository:
 
-```
 <img width="2156" height="725" alt="null" src="https://github.com/user-attachments/assets/7c6df63f-c572-4962-9499-e661c158394a" />
 
-```
+
 
 Then reference it here:
 
